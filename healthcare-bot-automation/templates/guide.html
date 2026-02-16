@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Health Guide | MediBot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --main-bg: #f1f5f9;
+            --primary: #10b981; /* Green for Health Guide */
+            --text-dark: #1e293b;
+        }
+
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--main-bg); height: 100vh; display: flex; overflow: hidden; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; }
+        .brand { font-size: 1.25rem; font-weight: 600; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .brand i { color: #60a5fa; }
+        
+        .menu-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; color: #94a3b8; font-size: 0.9rem; transition: all 0.2s; display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .menu-item:hover, .menu-item.active { background: #1e293b; color: white; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .search-box { width: 100%; padding: 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1.2rem; margin-bottom: 40px; outline: none; transition: border 0.3s; box-sizing: border-box; }
+        .search-box:focus { border-color: var(--primary); }
+
+        .article { background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .article:hover { transform: translateX(5px); }
+        
+        .article h2 { margin: 0 0 10px 0; color: var(--text-dark); }
+        .article p { color: #64748b; line-height: 1.6; }
+        .read-more { color: var(--primary); text-decoration: none; font-weight: 600; display: inline-block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-heart-pulse"></i> MediBot Ent.</div>
+        <a href="/" class="menu-item"><i class="fa-solid fa-comments"></i> Triage Chat</a>
+        <a href="/doctors" class="menu-item"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+        <a href="/guide" class="menu-item active"><i class="fa-solid fa-book-medical"></i> Health Guide</a>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <h1 style="color: var(--text-dark);"><i class="fa-solid fa-book-medical" style="color:var(--primary);"></i> Health Library</h1>
+            
+            <input type="text" class="search-box" id="articleSearch" placeholder="Search for symptoms, diseases...">
+            
+            <div id="articles">
+                <div class="article">
+                    <h2>Understanding Influenza (Flu)</h2>
+                    <p>The flu is a contagious respiratory illness caused by influenza viruses that infect the nose, throat, and sometimes the lungs.</p>
+                    <a href="#" class="read-more" id="read_flu">Read Full Article →</a>
+                </div>
+                
+                <div class="article">
+                    <h2>Managing High Blood Pressure</h2>
+                    <p>High blood pressure is a common condition that affects the body's arteries. It's also called hypertension.</p>
+                    <a href="#" class="read-more" id="read_bp">Read Full Article →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

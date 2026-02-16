@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediBot Enterprise</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --main-bg: #f1f5f9;
+            --primary: #3b82f6;
+            --bot-bubble: #ffffff;
+            --user-bubble: #3b82f6;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--main-bg); height: 100vh; display: flex; overflow: hidden; }
+
+        /* --- SIDEBAR (The "Pro" Touch) --- */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            transition: width 0.3s;
+        }
+        .brand { font-size: 1.25rem; font-weight: 600; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .brand i { color: #60a5fa; }
+        
+        /* Updated to handle <a> tags correctly */
+        .menu-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; /* Removes underline from links */
+        }
+        .menu-item:hover, .menu-item.active { background: #1e293b; color: white; }
+        
+        .history-section { margin-top: auto; border-top: 1px solid #334155; padding-top: 20px; }
+        .history-item { padding: 8px; font-size: 0.85rem; color: #64748b; cursor: pointer; }
+        .history-item:hover { color: #94a3b8; }
+
+        /* --- MAIN CHAT AREA --- */
+        .chat-interface { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+        /* Glass Header */
+        .header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 10;
+        }
+        .status-badge { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+
+        /* Chatbox */
+        #chatbox {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scroll-behavior: smooth;
+        }
+
+        /* Messages */
+        .msg-row { display: flex; gap: 15px; animation: slideUp 0.3s ease; max-width: 80%; }
+        .msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+        
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .bot-avatar { background: #e0f2fe; color: var(--primary); }
+        .user-avatar { background: #dbeafe; color: #1e40af; }
+
+        .bubble {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+        .msg-row.bot .bubble { background: var(--bot-bubble); color: var(--text-dark); border-top-left-radius: 2px; }
+        .msg-row.user .bubble { background: var(--user-bubble); color: white; border-top-right-radius: 2px; }
+        
+        .timestamp { font-size: 0.7rem; margin-top: 5px; opacity: 0.6; }
+
+        /* Input Zone */
+        .input-wrapper {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex; gap: 15px; align-items: center;
+        }
+        #textInput {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #textInput:focus { border-color: var(--primary); }
+        
+        #buttonInput {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        #buttonInput:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+        /* Animations */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+        
+        /* Loading Dots */
+        .typing { display: none; align-self: flex-start; margin-left: 55px; background: white; padding: 10px 15px; border-radius: 20px; box-shadow: var(--shadow); }
+        .typing span { width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; display: inline-block; margin: 0 2px; animation: bounce 1.4s infinite; }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-heart-pulse"></i> MediBot Ent.</div>
+        
+        <a href="/" class="menu-item active"><i class="fa-solid fa-comments"></i> Triage Chat</a>
+        <a href="/doctors" class="menu-item"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+        <a href="/guide" class="menu-item"><i class="fa-solid fa-book-medical"></i> Health Guide</a>
+        
+        <div class="history-section">
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-bottom: 10px;">Recent Sessions</div>
+            <div class="history-item"><i class="fa-regular fa-clock"></i> Fever Symptoms</div>
+            <div class="history-item"><i class="fa-regular fa-clock"></i> Chest Pain Inquiry</div>
+        </div>
+    </div>
+
+    <div class="chat-interface">
+        <div class="header">
+            <div>
+                <h2 style="margin:0; font-size: 1.1rem; color: #0f172a;">Medical Triage Assistant</h2>
+                <small style="color: #64748b;">AI-Powered • HIPPA Compliant Demo</small>
+            </div>
+            <div class="status-badge"><div class="dot"></div> Systems Online</div>
+        </div>
+
+        <div id="chatbox">
+            <div class="msg-row bot">
+                <div class="avatar bot-avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="bubble">
+                    Hello! I'm your AI Triage Assistant. I can help assess symptoms and guide you to care.
+                    <div class="timestamp">Just now</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="typing" id="typing">
+            <span></span><span></span><span></span>
+        </div>
+
+        <div class="input-wrapper">
+            <input type="text" id="textInput" placeholder="Describe your symptoms (e.g., 'Severe headache')..." onkeypress="handleEnter(event)">
+            <button id="buttonInput" onclick="getBotResponse()">Analyze <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i></button>
+        </div>
+    </div>
+
+    <script>
+        function handleEnter(e) { if(e.key === 'Enter') getBotResponse(); }
+
+        function getBotResponse() {
+            var rawText = document.getElementById("textInput").value;
+            if (!rawText.trim()) return;
+
+            var chatbox = document.getElementById("chatbox");
+            
+            // Render User Message
+            var userRow = `<div class="msg-row user">
+                <div class="avatar user-avatar"><i class="fa-regular fa-user"></i></div>
+                <div class="bubble">${rawText}<div class="timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div></div>
+            </div>`;
+            chatbox.insertAdjacentHTML('beforeend', userRow);
+            document.getElementById("textInput").value = "";
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            // Show Typing
+            var loader = document.getElementById("typing");
+            loader.style.display = "block";
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            fetch(`/get?msg=${encodeURIComponent(rawText)}`)
+                .then(res => res.json())
+                .then(data => {
+                    loader.style.display = "none";
+                    var botRow = `<div class="msg-row bot">
+                        <div class="avatar bot-avatar"><i class="fa-solid fa-robot"></i></div>
+                        <div class="bubble">${data.response}<div class="timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div></div>
+                    </div>`;
+                    chatbox.insertAdjacentHTML('beforeend', botRow);
+                    chatbox.scrollTop = chatbox.scrollHeight;
+                });
+        }
+    </script>
+</body>
+</html>
