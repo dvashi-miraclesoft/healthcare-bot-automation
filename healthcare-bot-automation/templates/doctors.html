@@ -3,92 +3,168 @@
 <head>
     <title>Find a Doctor | MediBot</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --sidebar-bg: #0f172a;
-            --main-bg: #f1f5f9;
-            --primary: #3b82f6;
-            --text-dark: #1e293b;
-        }
-
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--main-bg); height: 100vh; display: flex; overflow: hidden; }
-
-        /* --- SIDEBAR --- */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; }
-        .brand { font-size: 1.25rem; font-weight: 600; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
-        .brand i { color: #60a5fa; }
-        
-        .menu-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; color: #94a3b8; font-size: 0.9rem; transition: all 0.2s; display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .menu-item:hover, .menu-item.active { background: #1e293b; color: white; }
-        
-        /* --- MAIN CONTENT --- */
+        :root { --sidebar-bg: #0f172a; --main-bg: #f8fafc; --primary: #6366f1; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--main-bg); height: 100vh; display: flex; overflow: hidden; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 24px; }
+        .menu-item { padding: 14px 18px; border-radius: 12px; cursor: pointer; color: #94a3b8; text-decoration: none; display: flex; gap: 12px; margin-bottom: 8px; }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.1); color: white; }
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .container { max-width: 1000px; margin: 0 auto; }
         
-        /* Search Header */
-        .search-header { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; gap: 15px; margin-bottom: 30px; }
-        input { flex: 1; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; }
-        input:focus { border-color: var(--primary); }
-        button { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #2563eb; }
-        
-        /* Doctor Grid */
+        /* Grid & Cards */
+        .search-header { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; gap: 15px; margin-bottom: 30px; }
+        input { flex: 1; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        button.search-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: 700; cursor: pointer; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-        
-        .doc-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .avatar { width: 60px; height: 60px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem; }
-        .name { font-weight: 600; font-size: 1.1rem; color: var(--text-dark); }
-        .spec { color: #64748b; font-size: 0.9rem; }
-        
-        .book-btn { width: 100%; background: #f1f5f9; color: #334155; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
-        .book-btn:hover { background: #e2e8f0; }
+        .card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; transition: all 0.3s; }
+        .hidden { display: none; } 
+        #no-results { display: none; text-align: center; color: #64748b; margin-top: 50px; font-size: 1.2rem; }
+
+        /* BOOKING MODAL */
+        #booking-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 40px; border-radius: 16px; width: 400px; animation: slideIn 0.3s ease-out; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #475569; }
+        .form-group input { width: 100%; box-sizing: border-box; }
+        #success-msg { display: none; color: #10b981; font-weight: 700; text-align: center; margin-top: 20px; }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* CHAT WIDGET */
+        #chat-widget { position: fixed; bottom: 30px; right: 30px; z-index: 1000; display: flex; flex-direction: column; align-items: flex-end; }
+        #chat-toggle { background: var(--primary); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); cursor: pointer; font-size: 1.5rem; transition: transform 0.2s; }
+        #chat-toggle:hover { transform: scale(1.1); }
+        #mini-chat-window { display: none; width: 350px; height: 450px; background: white; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 15px; overflow: hidden; flex-direction: column; border: 1px solid #e2e8f0; }
+        .mini-header { background: var(--primary); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        #mini-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px; }
+        .mini-input-area { padding: 10px; border-top: 1px solid #e2e8f0; display: flex; background: white; }
+        #mini-input { flex: 1; border: none; outline: none; padding: 8px; }
+        .msg { padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 0.9rem; }
+        .msg.user { background: var(--primary); color: white; align-self: flex-end; }
+        .msg.bot { background: #e2e8f0; color: #1e293b; align-self: flex-start; }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <div class="brand"><i class="fa-solid fa-heart-pulse"></i> MediBot Ent.</div>
-        <a href="/" class="menu-item"><i class="fa-solid fa-comments"></i> Triage Chat</a>
-        <a href="/doctors" class="menu-item active"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
-        <a href="/guide" class="menu-item"><i class="fa-solid fa-book-medical"></i> Health Guide</a>
+        <h2 style="margin: 0 0 30px 0;">MediBot Pro</h2>
+        <a href="/" class="menu-item">Triage Chat</a>
+        <a href="/doctors" class="menu-item active">Find Doctors</a>
+        <a href="/guide" class="menu-item">Health Guide</a>
     </div>
 
     <div class="main-content">
-        <div class="container">
-            <h1 style="color: var(--text-dark); margin-bottom: 20px;"><i class="fa-solid fa-user-doctor" style="color:var(--primary);"></i> Find a Specialist</h1>
-            
-            <div class="search-header">
-                <input type="text" id="zipInput" placeholder="Enter Zip Code (e.g. 90210)">
-                <input type="text" id="specInput" placeholder="Specialty (e.g. Cardiologist)">
-                <button id="searchBtn">Search</button>
-            </div>
+        <h1>Find a Specialist</h1>
+        <div class="search-header">
+            <input type="text" id="filterInput" placeholder="Filter by Specialty (e.g., Cardiologist)">
+            <button class="search-btn" id="searchBtn" onclick="filterDoctors()">Filter</button>
+        </div>
+        
+        <div id="no-results"><i class="fa-solid fa-circle-exclamation"></i> No specialists found.</div>
 
-            <div class="grid" id="results">
-                <div class="card">
-                    <div class="doc-header">
-                        <div class="avatar"><i class="fa-solid fa-user-md"></i></div>
-                        <div>
-                            <div class="name">Dr. Sarah Smith</div>
-                            <div class="spec">Cardiologist • 2.5 miles</div>
-                        </div>
-                    </div>
-                    <button class="book-btn" id="book_1">Book Appointment</button>
-                </div>
-                
-                <div class="card">
-                    <div class="doc-header">
-                        <div class="avatar"><i class="fa-solid fa-user-nurse"></i></div>
-                        <div>
-                            <div class="name">Dr. James Chen</div>
-                            <div class="spec">Dermatologist • 5.0 miles</div>
-                        </div>
-                    </div>
-                    <button class="book-btn" id="book_2">Book Appointment</button>
-                </div>
+        <div class="grid" id="doctorGrid">
+            <div class="card doc-card" data-spec="cardiologist">
+                <h3>Dr. Sarah Smith</h3>
+                <p>Specialty: <strong>Cardiologist</strong></p>
+                <button class="search-btn" id="book_1" onclick="openBooking('Dr. Sarah Smith')" style="width:100%; margin-top:10px;">Book Now</button>
+            </div>
+            <div class="card doc-card" data-spec="dermatologist">
+                <h3>Dr. James Chen</h3>
+                <p>Specialty: <strong>Dermatologist</strong></p>
+                <button class="search-btn" onclick="openBooking('Dr. James Chen')" style="width:100%; margin-top:10px;">Book Now</button>
             </div>
         </div>
+
+        <div id="booking-modal">
+            <div class="modal-content">
+                <h2 id="modal-title">Book Appointment</h2>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="p_name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Preferred Date</label>
+                    <input type="text" id="p_date" placeholder="MM/DD/YYYY">
+                </div>
+                <button class="search-btn" id="confirm-book-btn" onclick="confirmBooking()" style="width:100%">Confirm Booking</button>
+                <div id="success-msg"><i class="fa-solid fa-check-circle"></i> Booking Confirmed!</div>
+                <button onclick="closeBooking()" style="margin-top:10px; background:none; border:none; cursor:pointer; width:100%; color:#64748b;">Cancel</button>
+            </div>
+        </div>
+
+        <div id="chat-widget">
+            <div id="mini-chat-window">
+                <div class="mini-header">AI Assistant <span style="cursor:pointer" onclick="toggleChat()">✕</span></div>
+                <div id="mini-messages"><div class="msg bot">Hi! Need help?</div></div>
+                <div class="mini-input-area"><input type="text" id="mini-input" onkeypress="handleMiniEnter(event)"></div>
+            </div>
+            <button id="chat-toggle" onclick="toggleChat()"><i class="fa-solid fa-comment-medical"></i></button>
+        </div>
     </div>
+
+    <script>
+        function filterDoctors() {
+            let input = document.getElementById('filterInput').value.toLowerCase();
+            let cards = document.querySelectorAll('.doc-card');
+            let visibleCount = 0;
+            cards.forEach(card => {
+                let spec = card.getAttribute('data-spec');
+                if (spec.includes(input)) { card.classList.remove('hidden'); visibleCount++; } 
+                else { card.classList.add('hidden'); }
+            });
+            document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        function openBooking(docName) {
+            document.getElementById('booking-modal').style.display = 'flex';
+            document.getElementById('modal-title').innerText = "Book with " + docName;
+        }
+        function closeBooking() { document.getElementById('booking-modal').style.display = 'none'; }
+        function confirmBooking() {
+            document.getElementById('confirm-book-btn').innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Processing...";
+            setTimeout(() => {
+                document.getElementById('confirm-book-btn').style.display = 'none';
+                document.getElementById('success-msg').style.display = 'block';
+            }, 1000);
+        }
+
+        function toggleChat() { 
+            let w = document.getElementById("mini-chat-window"); 
+            if (w.style.display === "none" || w.style.display === "") {
+                w.style.display = "flex";
+            } else {
+                w.style.display = "none";
+            }
+        }
+        
+        function handleMiniEnter(e) { 
+            if(e.key === 'Enter') { 
+                let box = document.getElementById("mini-messages");
+                let input = document.getElementById("mini-input");
+                let userText = input.value.toLowerCase();
+                
+                // 1. Show User Message
+                box.innerHTML += `<div class="msg user">${input.value}</div>`;
+                input.value = "";
+                box.scrollTop = box.scrollHeight;
+
+                // 2. "Smart" Response Logic
+                let botReply = "I can help you navigate the specialist directory."; // Default
+                
+                if (userText.includes("insurance") || userText.includes("aetna") || userText.includes("blue")) {
+                    botReply = "Yes, Dr. Smith accepts Aetna, Blue Cross, and Medicare.";
+                } else if (userText.includes("availability") || userText.includes("time")) {
+                    botReply = "Dr. Smith has openings available as early as tomorrow morning.";
+                } else if (userText.includes("cost") || userText.includes("price")) {
+                    botReply = "Initial consultations typically range from $150-$200 without insurance.";
+                }
+
+                // 3. Typo/Delay Simulation (Looks more real)
+                setTimeout(() => {
+                    box.innerHTML += `<div class="msg bot">${botReply}</div>`;
+                    box.scrollTop = box.scrollHeight;
+                }, 600);
+            }
+        }
+    </script>
 </body>
 </html>

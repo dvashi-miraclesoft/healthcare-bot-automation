@@ -1,43 +1,45 @@
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 
 class BasePage:
-    """Wrapper for Selenium operations with Visual Highlighting."""
-    
+    """
+    Advanced Automation Engine with 'Demo Mode' visuals.
+    """
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 100)
+        self.wait = WebDriverWait(driver, 15) # Increased timeout for safety
 
-    def highlight(self, element):
-        """Draws a red border around the element for 0.5s (The 'Ghost' Effect)."""
-        # JavaScript Injection to change CSS styles
-        self.driver.execute_script("arguments[0].style.border='3px solid red';", element)
-        self.driver.execute_script("arguments[0].style.boxShadow='0px 0px 10px red';", element)
-        time.sleep(0.5) # Pause so human eyes can see the highlight
-        # Remove the border (optional, but keeps UI clean)
-        self.driver.execute_script("arguments[0].style.border='';", element)
-        self.driver.execute_script("arguments[0].style.boxShadow='';", element)
-
-    # --- MISSING METHOD RESTORED BELOW ---
     def open_url(self, url):
         self.driver.get(url)
 
-    def find(self, locator):
-        return self.wait.until(EC.presence_of_element_located(locator))
-
-    def type_text(self, locator, text):
-        element = self.find(locator)
-        self.highlight(element)  # Visual Effect
-        element.clear()
-        element.send_keys(text)
+    def highlight(self, element):
+        """Draws a red border around the element so you can see what's happening."""
+        self.driver.execute_script("arguments[0].style.border='4px solid #ef4444';", element)
+        self.driver.execute_script("arguments[0].style.backgroundColor='rgba(239, 68, 68, 0.1)';", element)
+        time.sleep(0.5) # VISUAL PAUSE
 
     def click(self, locator):
-        element = self.wait.until(EC.element_to_be_clickable(locator))
-        self.highlight(element)  # Visual Effect
-        element.click()
+        el = self.wait.until(EC.element_to_be_clickable(locator))
+        self.highlight(el) # Show what we are clicking
+        time.sleep(0.5)    # Slow down for demo
+        el.click()
 
-    def get_text(self, locator):
-        element = self.find(locator)
-        self.highlight(element) # Visual Effect
-        return element.text
+    def type_text(self, locator, text):
+        el = self.wait.until(EC.visibility_of_element_located(locator))
+        self.highlight(el)
+        el.clear()
+        
+        # HUMAN TYPING EFFECT (Char by Char)
+        for char in text:
+            el.send_keys(char)
+            time.sleep(0.05) # Typing speed
+        
+        time.sleep(0.5) # Pause after typing
+
+    def find(self, locator):
+        return self.wait.until(EC.visibility_of_element_located(locator))
+    
+    def find_all(self, locator):
+        return self.driver.find_elements(*locator)

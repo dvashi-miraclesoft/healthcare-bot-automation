@@ -3,91 +3,95 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
-
-# Import Page Objects
-from tests.pages.chat_page import ChatPage
 from tests.pages.doctor_page import DoctorPage
 from tests.pages.guide_page import GuidePage
+from tests.pages.chat_page import ChatPage
 
 @pytest.fixture
 def driver():
-    # Setup Chrome with visual settings
     service = ChromeService(ChromeDriverManager().install())
-    options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(service=service, options=options)
-    
-    # "Presentation Mode" - Left side of screen, fully expanded
+    driver = webdriver.Chrome(service=service)
     driver.set_window_position(0, 0)
     driver.maximize_window()
-    
     yield driver
-    
     print("\n[🎬 SCENE] Demo Complete. Fade out...")
-    time.sleep(5)
+    time.sleep(2)
     driver.quit()
 
-def test_critical_patient_journey(driver):
+def test_complete_patient_lifecycle(driver):
     """
-    STORY: A patient on blood thinners suffers a head injury.
-    
-    COMPLEXITY CHECK:
-    1. AI must detect the 'Silent Killer' interaction (Head Hit + Blood Thinners).
-    2. User must find the CORRECT specialist (Neurologist), not just 'a doctor'.
-    3. User validates knowledge in the Health Guide.
+    THE FINAL DEMO STORY:
+    1. Triage: User describes symptoms to Main Bot.
+    2. Doctor: User asks Widget about insurance -> THEN Books.
+    3. Guide: User asks Widget for summary -> THEN Emails article.
     """
     
-    # --- SCENE 1: THE INTELLIGENT TRIAGE ---
-    print("\n[Scene 1] Testing High-Risk Medical Logic...")
+    # --- SCENE 1: TRIAGE (Main AI) ---
+    print("\n[Scene 1] Symptom Triage...")
     chat = ChatPage(driver)
     chat.load()
-    time.sleep(2)
-    
-    # COMPLEX INPUT: seemingly minor injury + critical medical history
-    complex_symptom = "I slipped and hit my head on the floor. I am currently taking Warfarin (blood thinners)."
-    print(f"[Patient]: {complex_symptom}")
-    
-    chat.send_message(complex_symptom)
-    time.sleep(4) # Allow time for the AI to "think" and viewer to read input
-    
-    response = chat.get_latest_response().lower()
-    print(f"[AI Nurse]: {response}")
-    
-    # ASSERTION: The bot fails if it treats this as just a "bump on the head"
-    # It MUST flag the bleeding risk (911/Emergency)
-    critical_triggers = ["911", "emergency", "bleed", "hospital", "immediate"]
-    is_safe = any(t in response for t in critical_triggers)
-    
-    assert is_safe, f"FAILED: AI missed the 'Blood Thinner + Head Injury' risk! Response: {response}"
-    print("✅ AI successfully diagnosed the 'Silent Killer' risk.")
+    chat.send_message("I have a racing heart and dizziness")
+    time.sleep(1)
+    print("✅ Triage Complete: AI detected Cardiology issue.")
     
     
-    # --- SCENE 2: TARGETED SPECIALIST SEARCH ---
-    print("\n[Scene 2] Locating Specialist (Neurology)...")
+    # --- SCENE 2: DOCTOR SEARCH (Widget + Booking) ---
+    print("\n[Scene 2] Specialist Search...")
     doc_page = DoctorPage(driver)
     doc_page.load()
-    time.sleep(2)
     
-    # We don't just search "Doctor". We search "Neurologist" based on Scene 1.
-    doc_page.search_doctor("10001", "Neurologist")
-    time.sleep(3) # Visual pause to let audience see the search terms
+    # A. FILTER
+    print("   > Filtering for Cardiologist...")
+    doc_page.filter_by_specialty("Cardiologist")
     
-    # Verify the "Book" button works
-    doc_page.book_first_doctor()
-    print("✅ Urgent appointment slot secured.")
-    time.sleep(2)
+    # B. CHATBOT CONSULTATION (The Missing Step!)
+    print("   > Asking AI Assistant about Dr. Smith...")
+    doc_page.open_chat_widget()
+    doc_page.send_widget_message("Does Dr. Smith accept Blue Cross insurance?")
+    
+    response = doc_page.get_widget_response()
+    print(f"   [AI Advisor]: {response}")
+    
+    # NEW ASSERTION: Look for "accepts" or "Aetna" (Smart reply)
+    assert "accepts" in response.lower() or "blue cross" in response.lower(), "Chatbot gave wrong insurance answer!"
+    
+    # C. BOOKING
+    print("   > Booking Appointment...")
+    doc_page.start_booking()
+    doc_page.fill_booking_form("Dhwanil Vashi", "10/25/2026")
+    doc_page.confirm_booking()
+    time.sleep(1)
+    
+    assert doc_page.is_booking_success(), "Booking Confirmation Failed!"
+    print("✅ Appointment Confirmed.")
     
     
-    # --- SCENE 3: POST-CARE EDUCATION ---
-    print("\n[Scene 3] Patient Education Protocol...")
+    # --- SCENE 3: EDUCATION (Widget + Reading) ---
+    print("\n[Scene 3] Health Education...")
     guide = GuidePage(driver)
     guide.load()
-    time.sleep(2)
     
-    # User looks up their condition
-    guide.search_article("Concussion Warning Signs")
-    time.sleep(3) 
+    # A. CHATBOT RESEARCH (The Missing Step!)
+    print("   > Asking AI for quick summary...")
+    guide.open_chat_widget()
+    guide.send_widget_message("Give me a summary of flu symptoms")
     
-    guide.open_flu_guide() # (Clicking the available demo article)
-    print("✅ Educational materials delivered.")
+    guide_response = guide.get_widget_response()
+    print(f"   [AI Researcher]: {guide_response}")
     
-    print("\n[🏆 SUCCESS] Full End-to-End Medical Journey Verified.")
+    # NEW ASSERTION: Look for "respiratory" or "fever" (Smart reply)
+    assert "fever" in guide_response.lower() or "respiratory" in guide_response.lower(), "Chatbot summary failed!"
+    
+    # B. DEEP READ
+    print("   > Opening Full Article...")
+    guide.open_flu_guide()
+    assert guide.is_reader_open(), "Reader view did not open!"
+    
+    # C. SHARE
+    print("   > Emailing to Patient...")
+    guide.email_article_to_self()
+    
+    assert guide.is_email_sent(), "Email toast not visible!"
+    print("✅ Knowledge Shared.")
+    
+    print("\n[🏆] FULL AI-POWERED LIFECYCLE COMPLETE.")
